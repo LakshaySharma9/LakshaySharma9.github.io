@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Count Up Down</title>
+</head>
+<body>
+  <h1>Count: <span id="count">0</span></h1>
+  <button onclick="countUp()">Count Up</button>
+  <button onclick="countDown()">Count Down</button>
+
+  <script>
+    let count = 0;
+    
+    function countUp() {
+      count += 1;
+      updateCount();
+      checkDivisibleByFive();
+    }
+
+    function countDown() {
+      count -= 1;
+      updateCount();
+      checkDivisibleByFive();
+    }
+
+    function updateCount() {
+      document.getElementById('count').innerText = count;
+    }
+
+    function checkDivisibleByFive() {
+      if (count % 5 === 0) {
+        alert('The count is divisible by 5. Playing audio...');
+        playAudio();
+      } else {
+        alert('The count is ' + count);
+      }
+    }
+
+    function playAudio() {
+      var audio = new Audio('C:\Users\laksh\Downloads\Lord Huron - The Night We Met (Instrumental).mp3');
+      audio.play();
+    }
+  </script>
+</body>
+</html>
