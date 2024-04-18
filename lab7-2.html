@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real-time Chat Application</title>
+    <script type="module">
+        const databaseUrl = 'https://comp165-6fef4-default-rtdb.firebaseio.com/chatMsg.json'; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('button').onclick = sendMessage;
+            displayAllMessages();
+        });
+
+        async function sendMessage() {
+            const usernameInput = document.querySelector('#username');
+            const messageInput = document.querySelector('#message');
+            const categorySelect = document.querySelector('#category');
+
+            const username = usernameInput.value;
+            const message = messageInput.value;
+            const category = categorySelect.value;
+
+            if (username && message) {
+                const timestamp = new Date().getTime();
+                const data = { username, message, timestamp, category };
+
+                try {
+                    const response = await fetch(databaseUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to send message');
+                    }
+
+                    messageInput.value = '';
+                    usernameInput.value = '';
+                    displayAllMessages(); 
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                }
+            }
+        }
+
+        async function displayAllMessages() {
+            try {
+                const response = await fetch(databaseUrl);
+                const data = await response.json();
+                const priorityMessages = [];
+                const generalMessages = [];
+
+                for (const postId in data) {
+                    const post = data[postId];
+                    if (post.category === 'Priority') {
+                        priorityMessages.push(post);
+                    } else {
+                        generalMessages.push(post);
+                    }
+                }
+
+                const dataContainer = document.querySelector('#messages');
+                dataContainer.innerHTML = "<h2>Announcement</h2>";
+
+                for (const post of priorityMessages) {
+                    const time = new Date(post.timestamp).toLocaleString("en-US", {timeZone: "America/Vancouver"});
+                    dataContainer.innerHTML += `
+                        <p>${time}</p>
+                        <p><u><strong>${post.username}</strong></u>:</p>
+                        <div style="color: red; font-weight: bold;">Priority</div>
+                        <p><strong>${post.message}</strong></p><br>
+                    `;
+                }
+
+                dataContainer.innerHTML += "<h2>General Messages</h2>";
+
+                for (const post of generalMessages) {
+                    const time = new Date(post.timestamp).toLocaleString("en-US", {timeZone: "America/Vancouver"});
+                    dataContainer.innerHTML += `
+                        <p>${time}</p>
+                        <p><u><strong>${post.username}</strong></u>:</p>
+                        <p><strong>${post.message}</strong></p><br>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Real-time Chat Application</h1>
+    <div>
+        <input type="text" id="username" placeholder="Enter your username">
+        <input type="text" id="message" placeholder="Enter your message">
+        <select id="category">
+            <option value="General" selected>General</option>
+            <option value="Priority">Priority</option>
+        </select>
+        <button>Send</button>
+    </div>
+    <div id="messages"></div>
+</body>
+</html>
